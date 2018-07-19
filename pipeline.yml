@@ -1,0 +1,21 @@
+jobs:
+
+resources:
+- name: scale-pcf
+  type: git
+  source:
+    uri: https://github.com/crdant/scale-pcf.git
+- name: pcf-pipelines-tarball
+  source:
+    api_token: ((pivnet_token))
+    product_slug: pcf-automation
+    product_version: ((pcf_pipelines_version))
+  type: pivnet
+
+
+resource_types:
+- name: pivnet
+  source:
+    repository: pivotalcf/pivnet-resource
+    tag: latest-final
+  type: docker-image

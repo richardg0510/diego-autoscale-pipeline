@@ -1,0 +1,24 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: pcfnorm/rootfs
+    tag: v0.2.7
+
+inputs:
+- name: scale-pcf
+
+outputs:
+- name: status
+
+run:
+  path: scale-pcf/tasks/scale-cells/task.sh
+
+params:
+  opsman_target:
+  opsman_user:
+  opsman_password:
+  threshold: 65
+  increment: 2

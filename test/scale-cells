@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+
+set -eu
+
+base_dir="$(dirname $(dirname $0))"
+incomplete=0
+target=
+opsman_target=
+opsman_user=
+opsman_password=
+threshold=
+increment=
+
+usage () {
+  message="$(basename $0) --target CONCOURSE_TARGET --api OPSMAN_URL [--user OPSMAN_ADMIN_USERNAME] [--password OPSMAN_ADMIN_PASSWORD] --threshold <PERCENTAGE>"
+  (>&2 echo "${message}")
+}
+
+parse_args () {
+  if [[ $# -gt 0 ]]; then
+    while [ $# -gt 0 ]; do
+      case $1 in
+        --target | -t )
+          target=$2
+          shift
+          ;;
+        --api | -a)
+          opsman_target=$2
+          shift
+          ;;
+        --user | -u )
+          opsman_user=$2
+          shift
+          ;;
+        --password | -p )
+          opsman_password=$2
+          shift
+          ;;
+        --threshold | -h )
+          threshold=$2
+          shift
+          ;;
+        --increment | -i )
+          increment=$2
+          shift
+          ;;
+        * )
+          (>&2 echo "Unrecognized option: $1")
+          usage
+          exit 1
+          ;;
+      esac
+      shift
+    done
+  fi
+
+  if [[ -z "${target}" ]] ; then
+    incomplete=1
+  fi
+
+  if [[ -z "${opsman_target}" ]] ; then
+    incomplete=1
+  fi
+
+  if [[ -z "${opsman_user}" ]] ; then
+    echo -n "Ops Manager User> "
+    read -s opsman_user
+  fi
+
+  if [[ -z "${opsman_password}" ]] ; then
+    echo -n "Ops Manager Password> "
+    read -s opsman_password
+  fi
+
+  if [[ -z "${threshold}" ]] ; then
+    incomplete=1
+  fi
+
+  if [[ -z "${increment}" ]] ; then
+    incomplete=1
+  fi
+
+  if [[ ${incomplete} -ne 0 ]] ; then
+    usage
+    exit ${incomplete}
+  fi
+}
+
+
+execute () {
+  output_dir="${base_dir}/output"
+
+  if [[ ! -d "${output_dir}" ]] ; then
+    mkdir ${output_dir}
+  fi
+
+  # pass parameters
+  export opsman_target
+  export opsman_user
+  export opsman_password
+  export threshold
+
+  fly --target ${target} execute \
+    --config ${base_dir}/tasks/scale-cells/task.yml \
+    --input scale-pcf=${base_dir} \
+    --output status=${output_dir}
+}
+
+main () {
+  parse_args $@
+  execute
+}
+
+main $@
