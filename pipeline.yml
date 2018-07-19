@@ -1,6 +1,92 @@
 jobs:
+- name: regulator
+  plan:
+  - get: schedule
+    trigger: true
+  - get: pcf-pipelines-tarball
+- name: autoscale-cells
+  plan:
+  - aggregate:
+    - do:
+      - get: pcf-pipelines-tarball
+        passed: [ regulator ]
+        trigger: true
+      - task: unpack-tarball
+        config:
+          image_resource:
+            source:
+              repository: pcfnorm/rootfs
+              tag: v0.2.7
+            type: docker-image
+          inputs:
+          - name: pcf-pipelines-tarball
+          outputs:
+          - name: pcf-pipelines
+          platform: linux
+          run:
+            args:
+            - -c
+            - tar -xvf pcf-pipelines-tarball/*.tgz
+            path: bash
+    - get: scale-pcf
+  - task: wait-opsman-clear
+    file: pcf-pipelines/tasks/wait-opsman-clear/task.yml
+    params:
+      OPSMAN_CLIENT_ID: ((opsman_client_id))
+      OPSMAN_CLIENT_SECRET: ((opsman_client_secret))
+      OPSMAN_USERNAME: ((opsman_admin_username))
+      OPSMAN_PASSWORD: ((opsman_admin_password))
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: ((opsman_domain_or_ip_address))
+  - task: scale-cells
+    file: scale-pcf/tasks/scale-cells/task.yml
+    params:
+      opsman_target: https://((opsman_domain_or_ip_address))
+      opsman_user: ((opsman_admin_username))
+      opsman_password: ((opsman_admin_password))
+      threshold: ((threshold))
+      increment: ((increment))
+- name: apply-changes
+  plan:
+  - aggregate:
+    - do:
+      - get: pcf-pipelines-tarball
+        passed: [ autoscale-cells ]
+        trigger: true
+      - task: unpack-tarball
+        config:
+          image_resource:
+            source:
+              repository: pcfnorm/rootfs
+              tag: v0.2.7
+            type: docker-image
+          inputs:
+          - name: pcf-pipelines-tarball
+          outputs:
+          - name: pcf-pipelines
+          platform: linux
+          run:
+            args:
+            - -c
+            - tar -xvf pcf-pipelines-tarball/*.tgz
+            path: bash
+  - task: apply-changes
+    file: pcf-pipelines/tasks/apply-changes/task.yml
+    params:
+      OPSMAN_CLIENT_ID: ((opsman_client_id))
+      OPSMAN_CLIENT_SECRET: ((opsman_client_secret))
+      OPSMAN_USERNAME: ((opsman_admin_username))
+      OPSMAN_PASSWORD: ((opsman_admin_password))
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: ((opsman_domain_or_ip_address))
 
 resources:
+- name: schedule
+  type: time
+  source:
+    interval: 120m
+    start: "12:00 AM"
+    stop: "11:59 PM"
+    location: America/Los_Angeles
+    days: [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
 - name: scale-pcf
   type: git
   source:
