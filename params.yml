@@ -1,3 +1,6 @@
+# interval to check on
+interval: 120m
+
 # averge memory usage across cells at which to scale up
 threshold: 65
 # number of instances to scale up by

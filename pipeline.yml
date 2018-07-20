@@ -53,6 +53,9 @@ jobs:
 - name: apply-changes
   plan:
   - aggregate:
+    - get: instance-status
+      passed: [ autoscale-cells ]
+      trigger: true
     - do:
       - get: pcf-pipelines-tarball
       - task: unpack-tarball
@@ -72,9 +75,6 @@ jobs:
             - -c
             - tar -xvf pcf-pipelines-tarball/*.tgz
             path: bash
-      - get: instance-status
-        passed: [ autoscale-cells ]
-        trigger: true
   - task: apply-changes
     file: pcf-pipelines/tasks/apply-changes/task.yml
     params:
@@ -88,7 +88,7 @@ resources:
 - name: schedule
   type: time
   source:
-    interval: 120m
+    interval: ((interval))
     start: "12:00 AM"
     stop: "11:59 PM"
     location: America/Los_Angeles
