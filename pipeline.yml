@@ -1,16 +1,11 @@
 jobs:
-- name: regulator
-  plan:
-  - get: schedule
-    trigger: true
-  - get: pcf-pipelines-tarball
 - name: autoscale-cells
   plan:
   - aggregate:
+    - get: schedule
+      trigger: true
     - do:
       - get: pcf-pipelines-tarball
-        passed: [ regulator ]
-        trigger: true
       - task: unpack-tarball
         config:
           image_resource:
