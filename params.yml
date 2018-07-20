@@ -1,7 +1,7 @@
 # averge memory usage across cells at which to scale up
 threshold: 65
 # number of instances to scale up by
-instances: 2
+increment: 2
 
 # the full URL to the PCF operations manager for the foundation you want to harden
 oopsman_domain_or_ip_address: CHANGEME
