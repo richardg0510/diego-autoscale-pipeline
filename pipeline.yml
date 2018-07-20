@@ -40,11 +40,13 @@ jobs:
       opsman_password: ((opsman_admin_password))
       threshold: ((threshold))
       increment: ((increment))
-  - put: instance-status
-    params:
-      file: status/autoscale-instances.json
-      predefined_acl: projectPrivate
-      content_type: application/json
+    on_success:
+      try:
+        put: instance-status
+        params:
+          file: status/autoscale-instances.json
+          predefined_acl: projectPrivate
+          content_type: application/json
 - name: apply-changes
   plan:
   - aggregate:
