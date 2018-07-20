@@ -79,6 +79,8 @@ scale_cells () {
       --request PUT \
       --data "${new_resource_config}" \
       --silent
+
+    jq -n --argjson instances $new_cell_count '{ "instances:" $instances}' > status/autoscale-instances.json
   fi
 }
 
