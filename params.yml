@@ -15,5 +15,5 @@ OPSMAN_CLIENT_ID: CHANGEME        # sensitive
 OPSMAN_CLIENT_SECRET: CHANGEME    # sensitive
 
 # old-style token to access the Pivotal Network to access the PCF pipelines, ideally put this in secrets management
-# pivnet_token: CHANGEME            # sensitive
+pivnet_token: CHANGEME            # sensitive
 pcf_pipelines_version: v0.23.5    # change if you're using a different version, YMMV
