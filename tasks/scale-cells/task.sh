@@ -36,7 +36,7 @@ get_status () {
 average_memory () {
   echo "Determining average memory allocation per cell..."
   cells=$(jq --arg job $job '[ .status [] | select ( ."job-name" | startswith( $job ) ) ] | length' status/job-status.json)
-  jq --argjson cells $cells --arg job $job '[ .status [] | select ( ."job-name" | startswith( $job ) ) | .memory.percent ] | map ( tonumber ) | add / $cells' status/job-status.json > status/average_memory
+  jq --argjson cells $cells --arg job $job '[ .status [] | select ( ."job-name" | startswith( $job ) ) | .memory.percent ] | map ( tonumber ) | add / $cells | floor' status/job-status.json > status/average_memory
 }
 
 scale_cells () {
@@ -80,7 +80,7 @@ scale_cells () {
       --data "${new_resource_config}" \
       --silent
 
-    jq -n --argjson instances $new_cell_count '{ "instances:" $instances}' > status/autoscale-instances.json
+    jq -n --argjson instances $new_cell_count '{ "instances:" $instances }' > status/autoscale-instances.json
   fi
 }
 
