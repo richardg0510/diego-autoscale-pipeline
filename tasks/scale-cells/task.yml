@@ -22,3 +22,4 @@ params:
   opsman_password:
   threshold: 65
   increment: 2
+  minimum_instance_count: 3

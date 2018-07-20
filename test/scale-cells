@@ -10,9 +10,10 @@ opsman_user=
 opsman_password=
 threshold=
 increment=
+minimum_instance_count=
 
 usage () {
-  message="$(basename $0) --target CONCOURSE_TARGET --api OPSMAN_URL [--user OPSMAN_ADMIN_USERNAME] [--password OPSMAN_ADMIN_PASSWORD] --threshold <PERCENTAGE>"
+  message="$(basename $0) --target CONCOURSE_TARGET --api OPSMAN_URL [--user OPSMAN_ADMIN_USERNAME] [--password OPSMAN_ADMIN_PASSWORD] --threshold <PERCENTAGE> --increment <INCREMENT> --minimum <MINIMUM>"
   (>&2 echo "${message}")
 }
 
@@ -42,6 +43,10 @@ parse_args () {
           ;;
         --increment | -i )
           increment=$2
+          shift
+          ;;
+        --minimum | -m )
+          minimum_instance_count=$2
           shift
           ;;
         * )
@@ -80,6 +85,10 @@ parse_args () {
     incomplete=1
   fi
 
+  if [[ -z "${minimum_instance_count}" ]] ; then
+    incomplete=1
+  fi
+
   if [[ ${incomplete} -ne 0 ]] ; then
     usage
     exit ${incomplete}
@@ -99,6 +108,8 @@ execute () {
   export opsman_user
   export opsman_password
   export threshold
+  export increment
+  export minimum_instance_count
 
   fly --target ${target} execute \
     --config ${base_dir}/tasks/scale-cells/task.yml \

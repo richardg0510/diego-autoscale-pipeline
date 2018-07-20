@@ -6,6 +6,9 @@ threshold: 65
 # number of instances to scale up by
 increment: 2
 
+# minimum number of instances (don't scale below this number of cells)
+minimum_instance_count: 3
+
 # the full URL to the PCF operations manager for the foundation you want to harden
 oopsman_domain_or_ip_address: CHANGEME
 

@@ -40,8 +40,26 @@ average_memory () {
 }
 
 scale_cells () {
-  echo "Detemerming whether capacity is needed (memory commited above $threshold% on average)..."
+  echo "Detemerming whether a change in capacity is needed (memory commited above $threshold% or below $(($threshold / 2))% on average)..."
+
+  if [[ $cells -le $minimum_instance_count ]] ; then
+    echo "Currently at minumum number of cell instances ($minimum_instance_count)."
+    exit 
+  fi
+
+  change=
+
   if [[ "$(cat status/average_memory)" -gt $threshold ]] ; then
+    change="up"
+  elif [[ "$(cat status/average_memory)" -lt $(($threshold/2)) ]] ; then
+    # always decrement by 1 to minimize impact
+    increment=-1
+    change="down"
+  fi
+
+  if [[ -n $change ]]; then
+    new_cell_count=$(($cells + $increment))
+
     job_guid="$(
       om-linux \
         --target "$opsman_target" \
@@ -54,7 +72,6 @@ scale_cells () {
         jq --raw-output ".jobs[] | select ( .name == \"${job}\" ) | .guid"
     )"
 
-    new_cell_count=$(($cells + $increment))
     new_resource_config="$(
       om-linux \
         --target "$opsman_target" \
@@ -67,7 +84,7 @@ scale_cells () {
         jq --argjson cells $new_cell_count '.instances = $cells'
     )"
 
-    echo "Scaling up number of Diego cells ($job_guid) by $increment to $new_cell_count..."
+    echo "Scaling $change number of Diego cells ($job_guid) by ${increment#-} to $new_cell_count..."
 
     om-linux \
       --target "$opsman_target" \
@@ -80,7 +97,7 @@ scale_cells () {
       --data "${new_resource_config}" \
       --silent
 
-    jq -n --argjson instances $new_cell_count '{ "instances:" $instances }' > status/autoscale-instances.json
+    jq -n --argjson instances $new_cell_count '{ "instances": $instances }' > status/autoscale-instances.json
   fi
 }
 

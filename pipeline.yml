@@ -40,6 +40,7 @@ jobs:
       opsman_password: ((opsman_admin_password))
       threshold: ((threshold))
       increment: ((increment))
+      minimum_instance_count: ((minimum_instance_count))
     on_success:
       try:
         put: instance-status
