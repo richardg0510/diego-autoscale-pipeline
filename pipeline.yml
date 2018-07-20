@@ -45,13 +45,16 @@ jobs:
       opsman_password: ((opsman_admin_password))
       threshold: ((threshold))
       increment: ((increment))
+  - put: instance-status
+    params:
+      file: status/autoscale-instances.json
+      predefined_acl: projectPrivate
+      content_type: application/json
 - name: apply-changes
   plan:
   - aggregate:
     - do:
       - get: pcf-pipelines-tarball
-        passed: [ autoscale-cells ]
-        trigger: true
       - task: unpack-tarball
         config:
           image_resource:
@@ -69,6 +72,9 @@ jobs:
             - -c
             - tar -xvf pcf-pipelines-tarball/*.tgz
             path: bash
+      - get: instance-status
+        passed: [ autoscale-cells ]
+        trigger: true
   - task: apply-changes
     file: pcf-pipelines/tasks/apply-changes/task.yml
     params:
@@ -97,7 +103,12 @@ resources:
     product_slug: pcf-automation
     product_version: ((pcf_pipelines_version))
   type: pivnet
-
+- name: instance-status
+  type: gcs-resource
+  source:
+    bucket: ((gcs_autoscale_bucket_name))
+    json_key: ((gcp_metadata_credfile_contents))
+    regexp: ((opsman_domain_or_ip_address))/autoscale-instances.json
 
 resource_types:
 - name: pivnet
@@ -105,3 +116,7 @@ resource_types:
     repository: pivotalcf/pivnet-resource
     tag: latest-final
   type: docker-image
+- name: gcs-resource
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
