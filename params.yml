@@ -11,8 +11,8 @@ opsman_admin_username:  CHANGEME            # sensitive
 opsman_admin_password: CHANGEME         # sensitive
 
 # if you're using a client id/secret instead of username password, set these
-OPSMAN_CLIENT_ID: CHANGEME        # sensitive
-OPSMAN_CLIENT_SECRET: CHANGEME    # sensitive
+opsman_client_id: CHANGEME        # sensitive
+opsman_client_secret: CHANGEME    # sensitive
 
 # old-style token to access the Pivotal Network to access the PCF pipelines, ideally put this in secrets management
 pivnet_token: CHANGEME            # sensitive
