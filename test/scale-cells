@@ -9,7 +9,7 @@ opsman_target=
 opsman_user=
 opsman_password=
 cf_api_uri=
-cf_username=
+cf_user=
 cf_password=
 threshold=
 increment=
@@ -18,7 +18,7 @@ gcp_project=
 gcp_credfile_contents=""
 
 usage () {
-  message="$(basename $0) --target CONCOURSE_TARGET --api OPSMAN_URL [--user OPSMAN_ADMIN_USERNAME] [--password OPSMAN_ADMIN_PASSWORD] [--cf_api_uri CF_API_URI] [--cf_username CF_USERNAME] [--cf_password CF_PASSWORD] --threshold <PERCENTAGE> --increment <INCREMENT> --minimum <MINIMUM> --gcp_project <GCP_PROJECT>"
+  message="$(basename $0) --target CONCOURSE_TARGET --api OPSMAN_URL [--user OPSMAN_ADMIN_USERNAME] [--password OPSMAN_ADMIN_PASSWORD] [--cf_api_uri CF_API_URI] [--cf_user CF_USER] [--cf_password CF_PASSWORD] --threshold <PERCENTAGE> --increment <INCREMENT> --minimum <MINIMUM> --gcp_project <GCP_PROJECT>"
   (>&2 echo "${message}")
 }
 
@@ -46,8 +46,8 @@ parse_args () {
           cf_api_uri=$2
           shift
           ;;
-        --cf_username | -cfu )
-          cf_username=$2
+        --cf_user | -cfu )
+          cf_user=$2
           shift
           ;;
         --cf_password | -cfp )
@@ -102,9 +102,9 @@ parse_args () {
     incomplete=1
   fi
 
-  if [[ -z "${cf_username}" ]] ; then
+  if [[ -z "${cf_user}" ]] ; then
     echo -n "CF User> "
-    read -s cf_username
+    read -s cf_user
   fi
 
   if [[ -z "${cf_password}" ]] ; then
@@ -147,7 +147,7 @@ execute () {
   export opsman_user
   export opsman_password
   export cf_api_uri
-  export cf_username
+  export cf_user
   export cf_password
   export threshold
   export increment

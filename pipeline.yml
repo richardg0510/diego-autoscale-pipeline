@@ -39,7 +39,7 @@ jobs:
       opsman_user: ((opsman_admin_username))
       opsman_password: ((opsman_admin_password))
       cf_api_uri: ((cf_api_uri))
-      cf_username: ((cf_username))
+      cf_user: ((cf_user))
       cf_password: ((cf_password))
       threshold: ((threshold))
       increment: ((increment))

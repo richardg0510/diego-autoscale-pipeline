@@ -21,7 +21,7 @@ params:
   opsman_user:
   opsman_password:
   cf_api_uri:
-  cf_username:
+  cf_user:
   cf_password:
   threshold: 65
   increment: 2

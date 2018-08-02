@@ -58,7 +58,7 @@ average_memory () {
 
   echo "Determining total reserved memory..."
   cf api $cf_api_uri --skip-ssl-validation
-  cf auth $cf_username $cf_password
+  cf auth $cf_user $cf_password
 
   cf curl "/v2/apps?results-per-page=10" > status/apps-1.json
   pages=$(jq '.total_pages' status/apps-1.json)

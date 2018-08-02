@@ -10,7 +10,7 @@ increment: 2
 minimum_instance_count: 3
 
 # the full URL to the PCF operations manager for the foundation you want to harden
-oopsman_domain_or_ip_address: CHANGEME
+opsman_domain_or_ip_address: CHANGEME
 
 # username and password to use to connect to the PCF Operations Manager, ideally put these in secrets management
 opsman_admin_username:  CHANGEME            # sensitive
@@ -23,6 +23,13 @@ opsman_client_secret: CHANGEME    # sensitive
 # old-style token to access the Pivotal Network to access the PCF pipelines, ideally put this in secrets management
 pivnet_token: CHANGEME            # sensitive
 pcf_pipelines_version: v0.23.5    # change if you're using a different version, YMMV
+
+# the full URL to cf for the foundation you want to harden
+cf_api_uri: CHANGEME
+
+# username and password to use to connect to cf, ideally put these in secrets management
+cf_user:  CHANGEME            # sensitive
+cf_password: CHANGEME         # sensitive
 
 # Service account credfile json with access to get GCP compute instance details
 opsman_gcp_project: CHANGEME
