@@ -111,7 +111,7 @@ resources:
   source:
     bucket: ((gcs_autoscale_bucket_name))
     json_key: ((gcp_metadata_credfile_contents))
-    regexp: ((opsman_domain_or_ip_address))/autoscale-instances.json
+    versioned_file: ((opsman_domain_or_ip_address))/autoscale-instances.json
 
 resource_types:
 - name: pivnet
