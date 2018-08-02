@@ -4,7 +4,14 @@ set -eu
 
 product_guid=
 cells=
+reserved_memory=0
 job=diego_cell
+memory_per_cell=
+
+gcp_credfile="status/gcpcreds.json"
+cat > ${gcp_credfile} <<EOF
+${gcp_credfile_contents}
+EOF
 
 get_status () {
   local product="${1}"
@@ -33,19 +40,41 @@ get_status () {
     --silent > status/job-status.json
 }
 
+get_cell_instance_memory () {
+  echo "Determining cell vm total memory..."
+  gcloud --project ${gcp_project} auth activate-service-account --key-file ${gcp_credfile}
+
+  zone=$(jq --arg job $job '[ .status [] | select ( ."job-name" | startswith( $job ) ) | {cid , az_name} ][0]' status/job-status.json | jq -r .az_name)
+  vm_name=$(jq --arg job $job '[ .status [] | select ( ."job-name" | startswith( $job ) ) | {cid , az_name} ][0]' status/job-status.json | jq -r .cid)
+
+  memory_per_cell=$(( $(gcloud --project $gcp_project compute instances describe $vm_name --zone $zone --format='get(machineType)' | awk -F- '{print $NF}') ))
+  echo "Memory per cell: $memory_per_cell MB"
+}
+
 average_memory () {
-  echo "Determining average memory allocation per cell..."
+  echo "Determining number of cells..."
   cells=$(jq --arg job $job '[ .status [] | select ( ."job-name" | startswith( $job ) ) ] | length' status/job-status.json)
-  jq --argjson cells $cells --arg job $job '[ .status [] | select ( ."job-name" | startswith( $job ) ) | .memory.percent ] | map ( tonumber ) | add / $cells | floor' status/job-status.json > status/average_memory
+  # jq --argjson cells $cells --arg job $job '[ .status [] | select ( ."job-name" | startswith( $job ) ) | .memory.percent ] | map ( tonumber ) | add / $cells | floor' status/job-status.json > status/average_memory
+
+  echo "Determining total reserved memory..."
+  cf api $cf_api_uri --skip-ssl-validation
+  cf auth $cf_username $cf_password
+
+  cf curl "/v2/apps?results-per-page=10" > status/apps-1.json
+  pages=$(jq '.total_pages' status/apps-1.json)
+
+  for (( p=1; p<=$pages; p++))
+  do
+    cf curl "/v2/apps?order-direction=asc&page=$p&results-per-page=10" > status/apps-$p.json
+    reserved_memory=$(($reserved_memory + $(jq '[ .resources [].entity | select ( .state=="STARTED" ) | .memory * .instances]' status/apps-$p.json |  jq 'add')))
+  done
+
+  echo "Determining average memory allocation percent - $cells cells with $(($memory_per_cell)) MB memory each, $reserved_memory MB of reserved memory..."
+  echo $((100 * $reserved_memory / ($cells * $memory_per_cell))) > status/average_memory
 }
 
 scale_cells () {
   echo "Detemerming whether a change in capacity is needed (memory commited above $threshold% or below $(($threshold / 2))% on average)..."
-
-  if [[ $cells -le $minimum_instance_count ]] ; then
-    echo "Currently at minumum number of cell instances ($minimum_instance_count)."
-    exit 
-  fi
 
   change=
 
@@ -59,6 +88,11 @@ scale_cells () {
 
   if [[ -n $change ]]; then
     new_cell_count=$(($cells + $increment))
+
+    if [[ $new_cell_count -lt $minimum_instance_count ]] ; then
+      echo "Currently at minumum number of cell instances ($minimum_instance_count)."
+      exit
+    fi
 
     job_guid="$(
       om-linux \
@@ -103,6 +137,7 @@ scale_cells () {
 
 main () {
   get_status "cf"
+  get_cell_instance_memory
   average_memory
   scale_cells
 }

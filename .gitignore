@@ -2,3 +2,4 @@ output
 output/*
 params-*.yml
 .pairs
+scale-cells-*

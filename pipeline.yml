@@ -38,9 +38,14 @@ jobs:
       opsman_target: https://((opsman_domain_or_ip_address))
       opsman_user: ((opsman_admin_username))
       opsman_password: ((opsman_admin_password))
+      cf_api_uri: ((cf_api_uri))
+      cf_username: ((cf_username))
+      cf_password: ((cf_password))
       threshold: ((threshold))
       increment: ((increment))
       minimum_instance_count: ((minimum_instance_count))
+      gcp_project: ((opsman_gcp_project))
+      gcp_credfile_contents: ((opsman_gcp_credfile_contents))
     on_success:
       try:
         put: instance-status
@@ -94,7 +99,7 @@ resources:
 - name: scale-pcf
   type: git
   source:
-    uri: https://github.com/crdant/diego-autoscale-pipeline.git
+    uri: ((diego-autoscale-pipeline))
 - name: pcf-pipelines-tarball
   source:
     api_token: ((pivnet_token))

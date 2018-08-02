@@ -23,3 +23,10 @@ opsman_client_secret: CHANGEME    # sensitive
 # old-style token to access the Pivotal Network to access the PCF pipelines, ideally put this in secrets management
 pivnet_token: CHANGEME            # sensitive
 pcf_pipelines_version: v0.23.5    # change if you're using a different version, YMMV
+
+# Service account credfile json with access to get GCP compute instance details
+opsman_gcp_project: CHANGEME
+opsman_gcp_credfile_contents: CHANGEME
+
+# Repository with the autoscale task - for example: https://github.com/crdant/diego-autoscale-pipeline.git
+diego-autoscale-pipeline: CHANGEME

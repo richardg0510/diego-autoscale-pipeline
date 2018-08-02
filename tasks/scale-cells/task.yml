@@ -20,6 +20,11 @@ params:
   opsman_target:
   opsman_user:
   opsman_password:
+  cf_api_uri:
+  cf_username:
+  cf_password:
   threshold: 65
   increment: 2
   minimum_instance_count: 3
+  gcp_project:
+  gcp_credfile_contents:

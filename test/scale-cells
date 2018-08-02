@@ -8,12 +8,17 @@ target=
 opsman_target=
 opsman_user=
 opsman_password=
+cf_api_uri=
+cf_username=
+cf_password=
 threshold=
 increment=
 minimum_instance_count=
+gcp_project=
+gcp_credfile_contents=""
 
 usage () {
-  message="$(basename $0) --target CONCOURSE_TARGET --api OPSMAN_URL [--user OPSMAN_ADMIN_USERNAME] [--password OPSMAN_ADMIN_PASSWORD] --threshold <PERCENTAGE> --increment <INCREMENT> --minimum <MINIMUM>"
+  message="$(basename $0) --target CONCOURSE_TARGET --api OPSMAN_URL [--user OPSMAN_ADMIN_USERNAME] [--password OPSMAN_ADMIN_PASSWORD] [--cf_api_uri CF_API_URI] [--cf_username CF_USERNAME] [--cf_password CF_PASSWORD] --threshold <PERCENTAGE> --increment <INCREMENT> --minimum <MINIMUM> --gcp_project <GCP_PROJECT>"
   (>&2 echo "${message}")
 }
 
@@ -37,6 +42,18 @@ parse_args () {
           opsman_password=$2
           shift
           ;;
+        --cf_api_uri | -cfa)
+          cf_api_uri=$2
+          shift
+          ;;
+        --cf_username | -cfu )
+          cf_username=$2
+          shift
+          ;;
+        --cf_password | -cfp )
+          cf_password=$2
+          shift
+          ;;
         --threshold | -h )
           threshold=$2
           shift
@@ -47,6 +64,10 @@ parse_args () {
           ;;
         --minimum | -m )
           minimum_instance_count=$2
+          shift
+          ;;
+        --gcp_project | -gp )
+          gcp_project=$2
           shift
           ;;
         * )
@@ -77,6 +98,20 @@ parse_args () {
     read -s opsman_password
   fi
 
+  if [[ -z "${cf_api_uri}" ]] ; then
+    incomplete=1
+  fi
+
+  if [[ -z "${cf_username}" ]] ; then
+    echo -n "CF User> "
+    read -s cf_username
+  fi
+
+  if [[ -z "${cf_password}" ]] ; then
+    echo -n "CF Password> "
+    read -s cf_password
+  fi
+
   if [[ -z "${threshold}" ]] ; then
     incomplete=1
   fi
@@ -86,6 +121,10 @@ parse_args () {
   fi
 
   if [[ -z "${minimum_instance_count}" ]] ; then
+    incomplete=1
+  fi
+
+  if [[ -z "${gcp_project}" ]] ; then
     incomplete=1
   fi
 
@@ -107,9 +146,14 @@ execute () {
   export opsman_target
   export opsman_user
   export opsman_password
+  export cf_api_uri
+  export cf_username
+  export cf_password
   export threshold
   export increment
   export minimum_instance_count
+  export gcp_project
+  export gcp_credfile_contents
 
   fly --target ${target} execute \
     --config ${base_dir}/tasks/scale-cells/task.yml \
