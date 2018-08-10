@@ -132,7 +132,30 @@ scale_cells () {
       --silent
 
     jq -n --argjson instances $new_cell_count '{ "instances": $instances }' > status/autoscale-instances.json
+
+    send_notification $change $increment $new_cell_count
   fi
+}
+
+send_notification () {
+  notification="{
+  \"@type\": \"MessageCard\",
+  \"@context\": \"http://schema.org/extensions\",
+  \"summary\": \"Diego cells are being scaled $1 in the $(echo $foundation_name | tr -d '\"') foundation by $2 to $3.\",
+  \"themeColor\": \"0000FF\",
+  \"title\": \"$(echo $foundation_name | tr -d '\"') - Diego Cells Autoscale Event \",
+  \"sections\": [
+    {
+      \"text\": \"Diego cells are being scaled $1 in the $(echo $foundation_name | tr -d '\"') foundation by $2 to $3.\",
+      },
+      {
+        \"activitySubtitle\": \"Diego Cells Autoscale.\"
+      }
+    ]
+  }"
+
+  curl -H "Content-Type: application/json" -X POST -d "$notification" $webhook
+
 }
 
 main () {

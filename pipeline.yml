@@ -46,6 +46,8 @@ jobs:
       minimum_instance_count: ((minimum_instance_count))
       gcp_project: ((opsman_gcp_project))
       gcp_credfile_contents: ((opsman_gcp_credfile_contents))
+    on_failure:
+      <<: *failure_notification
     on_success:
       try:
         put: instance-status
@@ -86,6 +88,8 @@ jobs:
       OPSMAN_USERNAME: ((opsman_admin_username))
       OPSMAN_PASSWORD: ((opsman_admin_password))
       OPSMAN_DOMAIN_OR_IP_ADDRESS: ((opsman_domain_or_ip_address))
+    on_failure:
+      <<: *failure_notification
 
 resources:
 - name: schedule
@@ -112,6 +116,10 @@ resources:
     bucket: ((gcs_autoscale_bucket_name))
     json_key: ((gcp_metadata_credfile_contents))
     versioned_file: ((opsman_domain_or_ip_address))/autoscale-instances.json
+- name: teams-notification
+  type: teams-notification
+  source:
+    url: ((teams_webhook_url))
 
 resource_types:
 - name: pivnet
@@ -123,3 +131,35 @@ resource_types:
   type: docker-image
   source:
     repository: frodenas/gcs-resource
+- name: teams-notification
+  type: docker-image
+  source:
+    repository: richardg0510/teams-notification-resource
+    tag: latest
+
+failure_notification: &failure_notification
+  put: teams-notification
+  params:
+    message: |
+      "{
+        \"@type\": \"MessageCard\",
+        \"@context\": \"http://schema.org/extensions\",
+        \"summary\": \"Diego Autoscale Pipeline Failure\",
+        \"themeColor\": \"FF0000\",
+        \"title\": \"Diego Autoscale Pipeline Failure\",
+        \"sections\": [
+          {
+            \"text\": \"The Diego Autoscale pipeline has failed at the $BUILD_PIPELINE_NAME/$BUILD_JOB_NAME job.\",
+            \"facts\": [
+              { \"name\": \"Team:\", \"value\": \"$BUILD_TEAM_NAME\" },
+              { \"name\": \"Pipeline Name:\", \"value\": \"$BUILD_PIPELINE_NAME\" },
+              { \"name\": \"Job Name:\", \"value\": \"$BUILD_JOB_NAME\" },
+              { \"name\": \"Build:\", \"value\": \"$BUILD_NAME\" },
+              { \"name\": \"Link:\", \"value\": \"[$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)\" }
+            ]
+          },
+          {
+            \"activitySubtitle\": \"Diego Autoscale Pipeline Failure.\"
+          }
+        ]
+      }"

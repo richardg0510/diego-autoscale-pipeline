@@ -28,3 +28,5 @@ params:
   minimum_instance_count: 3
   gcp_project:
   gcp_credfile_contents:
+  foundation_name:
+  webhook:
