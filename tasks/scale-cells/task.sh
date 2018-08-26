@@ -60,12 +60,12 @@ average_memory () {
   cf api $cf_api_uri --skip-ssl-validation
   cf auth $cf_user $cf_password
 
-  cf curl "/v2/apps?results-per-page=10" > status/apps-1.json
+  cf curl "/v2/apps?results-per-page=100" > status/apps-1.json
   pages=$(jq '.total_pages' status/apps-1.json)
 
   for (( p=1; p<=$pages; p++))
   do
-    cf curl "/v2/apps?order-direction=asc&page=$p&results-per-page=10" > status/apps-$p.json
+    cf curl "/v2/apps?order-direction=asc&page=$p&results-per-page=100" > status/apps-$p.json
     reserved_memory=$(($reserved_memory + $(jq '[ .resources [].entity | select ( .state=="STARTED" ) | .memory * .instances]' status/apps-$p.json |  jq 'add')))
   done
 
