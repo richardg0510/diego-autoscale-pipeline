@@ -46,6 +46,8 @@ jobs:
       minimum_instance_count: ((minimum_instance_count))
       gcp_project: ((opsman_gcp_project))
       gcp_credfile_contents: ((opsman_gcp_credfile_contents))
+      foundation_name: ((foundation_name))
+      webhook: ((teams_webhook_url))
     on_failure:
       <<: *failure_notification
     on_success:

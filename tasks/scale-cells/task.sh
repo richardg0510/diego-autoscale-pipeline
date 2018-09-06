@@ -69,7 +69,7 @@ average_memory () {
     reserved_memory=$(($reserved_memory + $(jq '[ .resources [].entity | select ( .state=="STARTED" ) | .memory * .instances]' status/apps-$p.json |  jq 'add')))
   done
 
-  echo "Determining average memory allocation percent - $cells cells with $(($memory_per_cell)) MB memory each, $reserved_memory MB of reserved memory..."
+  echo "Determining average memory allocation percent - $cells cells with $memory_per_cell MB memory each, $reserved_memory MB of reserved memory..."
   echo $((100 * $reserved_memory / ($cells * $memory_per_cell))) > status/average_memory
 }
 
