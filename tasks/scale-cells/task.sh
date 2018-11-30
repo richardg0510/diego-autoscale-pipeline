@@ -66,7 +66,12 @@ average_memory () {
   for (( p=1; p<=$pages; p++))
   do
     cf curl "/v2/apps?order-direction=asc&page=$p&results-per-page=100" > status/apps-$p.json
-    reserved_memory=$(($reserved_memory + $(jq '[ .resources [].entity | select ( .state=="STARTED" ) | .memory * .instances]' status/apps-$p.json |  jq 'add')))
+    page_memory=$(jq '[ .resources [].entity | select ( .state=="STARTED" ) | .memory * .instances]' status/apps-$p.json |  jq 'add')
+    if [ $page_memory == null ]
+    then
+      page_memory=0
+    fi
+    reserved_memory=$(($reserved_memory + $page_memory))
   done
 
   echo "Determining average memory allocation percent - $cells cells with $memory_per_cell MB memory each, $reserved_memory MB of reserved memory..."
